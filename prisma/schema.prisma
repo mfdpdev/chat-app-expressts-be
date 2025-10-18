@@ -1,0 +1,48 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum UserStatus {
+  ONLINE
+  OFFLINE
+}
+
+model User {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  name        String    
+  email       String    @unique
+  password    String
+  status      UserStatus    @default(UserStatus.OFFLINE)
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+}
+
+enum MessageStatus {
+  SENT
+  DELIVERED
+  READ
+}
+
+model Message {
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  conversation_id String
+  sender_id       String
+  content         Text
+  sent_at         DateTime @default(now())
+  read_status     MessageStatus @default(MessageStatus.SENT)
+}
+
+
+model Conversation {
+}
