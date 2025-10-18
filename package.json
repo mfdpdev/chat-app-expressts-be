@@ -4,7 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "nodemon ./src/main.ts",
+    "dev": "bun run ./src/main.ts",
     "dev:watch": "bun --watch run ./src/main.ts"
   },
   "devDependencies": {
@@ -17,6 +17,7 @@
   "dependencies": {
     "@prisma/client": "^6.17.1",
     "express": "^5.1.0",
-    "prisma": "^6.17.1"
+    "prisma": "^6.17.1",
+    "winston": "^3.18.3"
   }
 }
