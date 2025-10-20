@@ -37,16 +37,16 @@ export default class AuthValidation {
   }).strict();
 
   static readonly SIGNIN: ObjectSchema = Joi.object({
-    username: Joi.string()
-    .alphanum()
-    .min(3)
-    .max(30)
+    email: Joi.string()
+    .email()  
+    .min(5)
+    .max(100)
     .required()
     .messages({
-      'string.empty': 'Username is required',
-      'string.alphanum': 'Username must only contain alpha-numeric characters',
-      'string.min': 'Username should have at least 3 characters',
-      'string.max': 'Username should have at most 30 characters',
+      'string.empty': 'Email is required',
+      'string.email': 'Email must be a valid email address',
+      'string.min': 'Email should have at least 5 characters',
+      'string.max': 'Email should have at most 100 characters',
     }),
 
     password: Joi.string()

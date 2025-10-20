@@ -4,13 +4,21 @@ import AuthService from "../services/auth.service";
 export class AuthController {
   static async signin(req: Request, res: Response, next: NextFunction) {
     try {
-      const result = await AuthService.signin(req.body);
+      const { refreshToken, ...data} = await AuthService.signin(req.body);
+
+      res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        secure: process.env.APP_ENV == "production",
+        sameSite: "lax",
+        maxAge: 1000 * 60 * 60 * 24 * 7 //7 hari
+      });
+
       res
       .status(200)
       .json({
           statusCode: 200,
           status: "success",
-          data: result,
+          data: data,
         });
     } catch (err) {
       next(err);
@@ -29,6 +37,41 @@ export class AuthController {
         });
     } catch (err) {
       next(err);
+    }
+  }
+
+  static async signout(_: Request, res: Response, next: NextFunction){
+    try {
+      res.clearCookie('refreshToken', { 
+        httpOnly: true, 
+        secure: process.env.APP_ENV == "production",
+        sameSite: 'lax' 
+      });
+
+      res.status(200).json({
+        statusCode: 200,
+        status: "success",
+        data: "OK",
+      });
+
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  static async refreshToken(req: Request, res: Response, next: NextFunction){
+    try {
+      const { accessToken } = await AuthService.refreshToken(req.cookies.refreshToken)
+      res.status(200).json({
+        statusCode: 200,
+        status: "success",
+        data: {
+          accessToken,
+        },
+      });
+
+    } catch (e) {
+      next(e);
     }
   }
 }

@@ -10,8 +10,6 @@ const userSchema: Schema = new Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   status: { type: String, enum: UserStatus, default: UserStatus.OFFLINE },
-  created_at: { type: Date, default: Date.now },
-  updated_at: { type: Date, default: Date.now }
 }, {
   timestamps: true
 });
