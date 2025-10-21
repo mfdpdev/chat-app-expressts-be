@@ -7,14 +7,14 @@ export class MessageController {
     try {
       const message = await MessageService.create({
         ...req.body,
-        senderId: req.user?._id,
+        senderId: req.user?._id.toString(),
       });
       res.status(200)
       .json({
           statusCode: 200,
           status: "success",
           data: {
-            ...message
+            message
           }
         });
     } catch(err) {
