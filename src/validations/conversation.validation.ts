@@ -6,6 +6,7 @@ export default class ConversationValidation {
     participants: Joi.array()
     .items(Joi.string().required())
     .length(2)
-    .required()
+    .required(),
+    message: Joi.object().required(),
   }).strict();
 }

@@ -1,8 +1,7 @@
 import express from "express"
 import authMiddleware from "../middlewares/auth.middleware";
 import { AuthController } from "../controllers/auth.controller";
-import { ConversationController } from "../controllers/conversation.controller";
-import { MessageController } from "../controllers/message.controller";
+import { ChatController } from "../controllers/chat.controller";
 
 const apiRouter = express.Router();
 
@@ -12,8 +11,7 @@ apiRouter.use(authMiddleware);
 //auth
 apiRouter.delete('/auth/signout', AuthController.signout);
 
-//conversations
-apiRouter.post('/conversations', ConversationController.create);
-apiRouter.post('/messages', MessageController.create);
+//chat
+apiRouter.post('/chats/:receiverId', ChatController.create);
 
 export default apiRouter;

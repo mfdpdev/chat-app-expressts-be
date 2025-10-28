@@ -1,8 +1,6 @@
-import mongoose, { Mongoose, type ClientSession } from "mongoose";
 import Conversation from "../models/Conversation";
 import ConversationValidation from "../validations/conversation.validation";
 import { Validation } from "../validations/validation";
-import MessageService from "./message.service";
 import User from "../models/User";
 import ResponseError from "../errors/response.error";
 
@@ -24,19 +22,21 @@ export default class ConversationService {
       throw new ResponseError(404, "Participants must be exactly two valid users");
     }
 
-    const existingConversation = await Conversation.findOne({
+    let conversation: any = await Conversation.findOne({
       participants: {
         $all: participants,
       }
     }).lean();
 
-    if(existingConversation) return existingConversation;
-    
-    const conversation = new Conversation({
-      participants,
-    });
+    if(!conversation) {
+      conversation = new Conversation({
+        participants,
+      });
+    } 
 
-    await conversation.save();
+    conversation.messages.push(data.message._id);
+    
+    conversation = conversation.save();
 
     return conversation; 
   }  
