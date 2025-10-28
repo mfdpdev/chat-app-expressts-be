@@ -4,20 +4,19 @@ import errorMiddleware from "./middlewares/error.middleware";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import apiRouter from "./routes/api";
-
-const server = express();
+import { app } from "./socket/socket";
 
 //middlware
-server.use(express.json())
+app.use(express.json())
 
 const prefix: string = "/api/v1";
 
-server.use(cors())
-server.use(cookieParser())
+app.use(cors())
+app.use(cookieParser())
+app
+app.use(prefix, publicRouter);
+app.use(prefix, apiRouter);
+app
+app.use(errorMiddleware);
 
-server.use(prefix, publicRouter);
-server.use(prefix, apiRouter);
-
-server.use(errorMiddleware);
-
-export default server;
+export default app;

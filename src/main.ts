@@ -1,5 +1,5 @@
 import connectToDB from "./config/mongoose.config";
-import server from "./server";
+import { server } from "./socket/socket";
 import logger from "./utils/logger";
 
 const port: number = parseInt(process.env.APP_PORT!) ?? 8000;
