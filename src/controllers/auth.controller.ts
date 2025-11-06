@@ -10,7 +10,8 @@ export class AuthController {
         httpOnly: true,
         secure: process.env.APP_ENV == "production",
         sameSite: "lax",
-        maxAge: 1000 * 60 * 60 * 24 * 7 //7 hari
+        path: "/",
+        maxAge: req.body.rememberMe ? 1000 * 60 * 60 * 24 * 7 : undefined //7 hari
       });
 
       res
@@ -45,7 +46,8 @@ export class AuthController {
       res.clearCookie('refreshToken', { 
         httpOnly: true, 
         secure: process.env.APP_ENV == "production",
-        sameSite: 'lax' 
+        sameSite: 'lax',
+        path: "/",
       });
 
       res.status(200).json({

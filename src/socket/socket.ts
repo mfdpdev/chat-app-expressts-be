@@ -1,19 +1,41 @@
 import express from "express";
 import http from "http"
 import { Server } from "socket.io";
+import cookieParser from "cookie-parser";
+import publicRouter from "../routes/public-api";
+import apiRouter from "../routes/api";
+import errorMiddleware from "../middlewares/error.middleware";
+import cors from "cors";
 
 const app = express();
+
+app.use(express.json())
+
+const prefix: string = "/api/v1";
+
+app.use(cors({
+  origin: "http://localhost:5173",
+  credentials: true,
+}))
+app.use(cookieParser())
+
+app.use(prefix, publicRouter);
+app.use(prefix, apiRouter);
+
+app.use(errorMiddleware);
 
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
     origin: [
-      "http://localhost8000"
+      // "http://localhost:8000",
+      "http://localhost:5173"
     ],
-    methods: [
-      "POST",
-      "GET"
-    ]
+    credentials: true,
+    // methods: [
+    //   "POST",
+    //   "GET"
+    // ]
   }
 });
 
@@ -23,20 +45,51 @@ export const getReceiverSocketId = (receiverId: any) => {
 
 const userSocketMap: any = {};
 
+// Socket.IO with auth
+// io.use((socket, next) => {
+//   const token = socket.handshake.auth.token;
+//   if (!token) return next(new Error('Authentication error'));
+//
+//   try {
+//     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+//     socket.userId = decoded.id;
+//     next();
+//   } catch (err) {
+//     next(new Error('Invalid token'));
+//   }
+// });
+
 io.on("connection", (socket) => {
   console.log("a user connected", socket.id);
+
+  socket.on("send-message", async (msg) => {
+    console.log(msg)
+
+    socket.emit('receive-message', msg);
+  })
 
   const userId: any = socket.handshake.query.userId;
 	if (userId != "undefined") userSocketMap[userId] = socket.id;
 
+  socket.on("typing", ({to, isTyping}) => {
+    const from = Object.keys(userSocketMap).find( userId => userSocketMap[userId] === socket.id);
+    if( !from || !to ) return;
+
+    const target = userSocketMap[to];
+    if(target){
+      io.to(target).emit('typing', {from, isTyping })
+    }
+  })
+
 	// io.emit() is used to send events to all the connected clients
-	io.emit("getOnlineUsers", Object.keys(userSocketMap));
+	io.emit("online-users", Object.keys(userSocketMap));
 
 	// socket.on() is used to listen to the events. can be used both on client and server side
 	socket.on("disconnect", () => {
 		console.log("user disconnected", socket.id);
+		console.log("user disconnected", userId);
 		delete userSocketMap[userId];
-		io.emit("getOnlineUsers", Object.keys(userSocketMap));
+		io.emit("online-users", Object.keys(userSocketMap));
 	});
 });
 

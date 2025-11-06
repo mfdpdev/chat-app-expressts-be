@@ -80,20 +80,26 @@ export default class AuthService {
 
   static async refreshToken(token: string): Promise<RefreshTokenResponse> {
 
-    if(token == "") {
+    if(token == "" || !token) {
       throw new ResponseError(401, "Unauthorized");
     }
 
-    const payload = jwt.verify(token, process.env.SECRET_JWT_REFRESH!) as CustomJwtPayload;
-    
-    const accessToken = jwt.sign({
-      _id: payload.id,
-    }, process.env.SECRET_JWT_ACCESS!, {
-        expiresIn: "15m"
-    });
+    try {
+      const payload = jwt.verify(token, process.env.SECRET_JWT_REFRESH!) as CustomJwtPayload;
+      
+      const accessToken = jwt.sign({
+        _id: payload._id,
+      }, process.env.SECRET_JWT_ACCESS!, {
+          expiresIn: "15m"
+      });
 
-    return {
-      accessToken,
+      return {
+        accessToken,
+      }
+    } catch (err) {
+      //jika 403 akan loop di fe
+      //logic di fe kurang betul sepertinya
+      throw new ResponseError(403, "Forbidden")
     }
   }
 }

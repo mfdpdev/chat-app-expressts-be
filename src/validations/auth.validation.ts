@@ -58,5 +58,11 @@ export default class AuthValidation {
       'string.min': 'Password should have at least 6 characters',
       'string.max': 'Password should have at most 128 characters',
     }),
+    rememberMe: Joi.boolean()
+    .default(false)
+    .optional()
+    .messages({
+      'boolean.base': 'Remember Me must be true or false',
+    }),
   }).strict();
 }
