@@ -102,4 +102,14 @@ export default class AuthService {
       throw new ResponseError(403, "Forbidden")
     }
   }
+
+  static async me(_id: string){
+    const user = await User.findById({
+      _id: _id
+    }).select(
+        "_id name email"
+      ).lean();
+
+    return user;
+  }
 }

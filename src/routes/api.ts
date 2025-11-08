@@ -10,6 +10,7 @@ const apiRouter = express.Router();
 apiRouter.use(authMiddleware);
 
 //auth
+apiRouter.get('/auth/me', AuthController.me);
 apiRouter.delete('/auth/signout', AuthController.signout);
 
 //chat

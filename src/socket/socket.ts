@@ -6,6 +6,7 @@ import publicRouter from "../routes/public-api";
 import apiRouter from "../routes/api";
 import errorMiddleware from "../middlewares/error.middleware";
 import cors from "cors";
+import ioMiddleware from "../middlewares/io.middleware";
 
 const app = express();
 
@@ -39,25 +40,10 @@ const io = new Server(server, {
   }
 });
 
-export const getReceiverSocketId = (receiverId: any) => {
-	return userSocketMap[receiverId];
-};
-
 const userSocketMap: any = {};
 
 // Socket.IO with auth
-// io.use((socket, next) => {
-//   const token = socket.handshake.auth.token;
-//   if (!token) return next(new Error('Authentication error'));
-//
-//   try {
-//     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-//     socket.userId = decoded.id;
-//     next();
-//   } catch (err) {
-//     next(new Error('Invalid token'));
-//   }
-// });
+io.use(ioMiddleware);
 
 io.on("connection", (socket) => {
   console.log("a user connected", socket.id);
@@ -68,8 +54,8 @@ io.on("connection", (socket) => {
     socket.emit('receive-message', msg);
   })
 
-  const userId: any = socket.handshake.query.userId;
-	if (userId != "undefined") userSocketMap[userId] = socket.id;
+  const _id: any = socket.handshake.query.userId;
+	if (_id != "undefined") userSocketMap[_id] = socket.id;
 
   socket.on("typing", ({to, isTyping}) => {
     const from = Object.keys(userSocketMap).find( userId => userSocketMap[userId] === socket.id);
@@ -87,8 +73,7 @@ io.on("connection", (socket) => {
 	// socket.on() is used to listen to the events. can be used both on client and server side
 	socket.on("disconnect", () => {
 		console.log("user disconnected", socket.id);
-		console.log("user disconnected", userId);
-		delete userSocketMap[userId];
+		delete userSocketMap[_id];
 		io.emit("online-users", Object.keys(userSocketMap));
 	});
 });

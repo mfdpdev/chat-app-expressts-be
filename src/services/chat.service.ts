@@ -15,11 +15,11 @@ export default class ChatService {
         message,
       });
 
-      const receiverSocketId = getReceiverSocketId(data.receiverId);
-      if (receiverSocketId) {
-        // io.to(<socket_id>).emit() used to send events to specific client
-        io.to(receiverSocketId).emit("newMessage", message);
-      }
+      // const receiverSocketId = getReceiverSocketId(data.receiverId);
+      // if (receiverSocketId) {
+      //   // io.to(<socket_id>).emit() used to send events to specific client
+      //   io.to(receiverSocketId).emit("newMessage", message);
+      // }
 
       return message;
     } catch (error) {

@@ -1,5 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import AuthService from "../services/auth.service";
+import type { CustomRequest } from "../types/request.type";
 
 export class AuthController {
   static async signin(req: Request, res: Response, next: NextFunction) {
@@ -72,6 +73,21 @@ export class AuthController {
         },
       });
 
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  static async me(req: CustomRequest, res: Response, next: NextFunction){
+    try {
+      const user = await AuthService.me(req.user?._id!)
+      res.status(200).json({
+        statusCode: 200,
+        status: "success",
+        data: {
+          user,
+        },
+      });
     } catch (e) {
       next(e);
     }
