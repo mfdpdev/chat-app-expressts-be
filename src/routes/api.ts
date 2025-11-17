@@ -25,5 +25,6 @@ apiRouter.get('/chats/:conversationId', ChatController.getById);
 
 //user
 apiRouter.get("/users", UserController.getAll);
+apiRouter.patch("/users", UserController.update);
 
 export default apiRouter;

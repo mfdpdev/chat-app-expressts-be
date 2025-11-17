@@ -1,6 +1,5 @@
 import type { ObjectSchema } from "joi";
 import Joi from "joi";
-import { MessageStatus } from "../models/Message";
 
 export default class MessageValidation {
   static readonly CREATE: ObjectSchema = Joi.object({

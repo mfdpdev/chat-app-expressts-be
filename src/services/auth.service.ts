@@ -73,7 +73,7 @@ export default class AuthService {
     return {
       _id: user.id,
       name: user.name as string,
-      email: user.name as string,
+      email: user.email as string,
       accessToken: accessToken,
       refreshToken: refreshToken,
     }
