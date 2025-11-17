@@ -35,10 +35,10 @@ const authMiddleware = async (req: CustomRequest, res: Response, next: NextFunct
         };
         next();
       } catch (error) {
-        return res.status(403).json({
-          statusCode: 403,
+        return res.status(401).json({
+          statusCode: 401,
           status: "fail",
-          message: "Forbidden: Invalid or expired token"
+          message: "Unauthorized: Invalid or expired token"
         });
       }
   }

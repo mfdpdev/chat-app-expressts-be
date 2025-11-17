@@ -7,7 +7,7 @@ export default class MessageValidation {
     senderId: Joi.string().required().messages({
       "string.empty": `"senderId" cannot be empty`,
     }),
-    receiverId: Joi.string().required().messages({
+    recipientId: Joi.string().required().messages({
       "string.empty": `"receiverId" cannot be empty`,
     }),
     message: Joi.string().min(1).max(2000).required().messages({

@@ -61,7 +61,8 @@ export default class AuthService {
     const accessToken = jwt.sign({
       _id: user.id,
     }, process.env.SECRET_JWT_ACCESS!, {
-        expiresIn: "15m"
+        // expiresIn: "15m"
+        expiresIn: "1m"
     });
     const refreshToken = jwt.sign({
       _id: user.id,
@@ -90,16 +91,15 @@ export default class AuthService {
       const accessToken = jwt.sign({
         _id: payload._id,
       }, process.env.SECRET_JWT_ACCESS!, {
-          expiresIn: "15m"
+          // expiresIn: "15m"
+          expiresIn: "1m"
       });
 
       return {
         accessToken,
       }
     } catch (err) {
-      //jika 403 akan loop di fe
-      //logic di fe kurang betul sepertinya
-      throw new ResponseError(403, "Forbidden")
+      throw new ResponseError(401, "Unauthorized: Invalid or expired token")
     }
   }
 

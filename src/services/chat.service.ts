@@ -1,4 +1,3 @@
-import { getReceiverSocketId, io } from "../socket/socket";
 import ConversationService from "./conversation.service";
 import MessageService from "./message.service";
 
@@ -7,21 +6,18 @@ export default class ChatService {
     try {
 
       const message = await MessageService.create(data);
-      const _ = await ConversationService.create({
+      const conversation = await ConversationService.create({
         participants: [
           data.senderId,
-          data.receiverId,
+          data.recipientId,
         ],
         message,
       });
 
-      // const receiverSocketId = getReceiverSocketId(data.receiverId);
-      // if (receiverSocketId) {
-      //   // io.to(<socket_id>).emit() used to send events to specific client
-      //   io.to(receiverSocketId).emit("newMessage", message);
-      // }
-
-      return message;
+      return {
+        conversation,
+        lastMessage: message,
+      };
     } catch (error) {
       throw error;
     }

@@ -26,18 +26,51 @@ export default class ConversationService {
       participants: {
         $all: participants,
       }
-    }).lean();
+    });
 
-    if(!conversation) {
-      conversation = new Conversation({
-        participants,
-      });
-    } 
+    if(conversation){
+      conversation.messages.push(data.message._id);
+      await conversation.save();
+      return conversation;
+    }
+
+    conversation = new Conversation({
+      participants,
+    });
 
     conversation.messages.push(data.message._id);
     
-    conversation = conversation.save();
+    await conversation.save();
 
     return conversation; 
   }  
+
+  static async getById(conversationId){
+    let conversation: any = await Conversation.findOne({
+      _id: conversationId,
+    }).populate({
+        path: "messages",
+        select: "_id senderId recipientId message createdAt"
+      }).sort({
+        createdAt: 1,
+      }).lean();
+    return conversation;
+  }
+
+  static async getByParticipants(participants){
+    let conversation: any = await Conversation.findOne({
+      participants: {
+        $all: participants,
+      }
+    }).populate({
+        path: "messages",
+        select: "_id senderId recipientId message createdAt"
+      }).sort({
+        createdAt: 1,
+      }).lean();
+          // .sort({ createdAt: 1 }) 
+          // .limit(100) 
+          // .lean(); 
+    return conversation;
+  }
 }

@@ -1,85 +1,105 @@
-import express from "express";
-import http from "http"
 import { Server } from "socket.io";
-import cookieParser from "cookie-parser";
-import publicRouter from "../routes/public-api";
-import apiRouter from "../routes/api";
-import errorMiddleware from "../middlewares/error.middleware";
-import cors from "cors";
 import ioMiddleware from "../middlewares/io.middleware";
-
-const app = express();
-
-app.use(express.json())
-
-const prefix: string = "/api/v1";
-
-app.use(cors({
-  origin: "http://localhost:5173",
-  credentials: true,
-}))
-app.use(cookieParser())
-
-app.use(prefix, publicRouter);
-app.use(prefix, apiRouter);
-
-app.use(errorMiddleware);
-
-const server = http.createServer(app);
-const io = new Server(server, {
-  cors: {
-    origin: [
-      // "http://localhost:8000",
-      "http://localhost:5173"
-    ],
-    credentials: true,
-    // methods: [
-    //   "POST",
-    //   "GET"
-    // ]
-  }
-});
+import ConversationService from "../services/conversation.service";
+import ChatService from "../services/chat.service";
 
 const userSocketMap: any = {};
 
-// Socket.IO with auth
-io.use(ioMiddleware);
+export function init(io: Server){
+  // Socket.IO with auth
+  io.use(ioMiddleware);
 
-io.on("connection", (socket) => {
-  console.log("a user connected", socket.id);
+  io.on("connection", (socket) => {
 
-  socket.on("send-message", async (msg) => {
-    console.log(msg)
+    console.log("a user connected", socket.id);
 
-    socket.emit('receive-message', msg);
-  })
+    const _id: any = socket.handshake.query.userId;
+    if (_id != "undefined") userSocketMap[_id] = socket.id;
 
-  const _id: any = socket.handshake.query.userId;
-	if (_id != "undefined") userSocketMap[_id] = socket.id;
+    socket.on("send-message", async ({ to, message }) => {
+      const from = Object.keys(userSocketMap).find( userId => userSocketMap[userId] === socket.id);
+      console.log(from, to)
+      if( !from || !to ) return;
 
-  socket.on("typing", ({to, isTyping}) => {
-    const from = Object.keys(userSocketMap).find( userId => userSocketMap[userId] === socket.id);
-    if( !from || !to ) return;
+      const target = userSocketMap[to];
 
-    const target = userSocketMap[to];
-    if(target){
-      io.to(target).emit('typing', {from, isTyping })
-    }
-  })
+      const { conversation, lastMessage } = await ChatService.create({
+        message,
+        senderId: from,
+        recipientId: to,
+      });
 
-	// io.emit() is used to send events to all the connected clients
-	io.emit("online-users", Object.keys(userSocketMap));
+      if(target){
+        io.to(target).emit('receive-message', lastMessage)
+      }
 
-	// socket.on() is used to listen to the events. can be used both on client and server side
-	socket.on("disconnect", () => {
-		console.log("user disconnected", socket.id);
-		delete userSocketMap[_id];
-		io.emit("online-users", Object.keys(userSocketMap));
-	});
-});
+      io.to(userSocketMap[from]).emit('receive-message', lastMessage)
+    })
 
-export {
-  app,
-  server,
-  io
+
+    socket.on('fetch-history', async ({ participants, conversationId }) => {
+      try {
+        // console.log(`[HISTORY] Memuat riwayat antara ${user1} dan ${user2}`);
+
+        // Query pesan: (sender=A & target=B) OR (sender=B & target=A)
+        let conversation = null;
+        if(conversationId){
+          conversation = await ConversationService.getById(conversationId);
+        }
+
+        if(participants.length > 0){
+          conversation = await ConversationService.getByParticipants(participants);
+        }
+
+        // conversation = await ConversationService.get({
+        //   $or: [
+        //     { sender: user1, target: user2 },
+        //     { sender: user2, target: user1 }
+        //   ]
+        // })
+        //   .sort({ createdAt: 1 }) 
+        //   .limit(100) 
+        //   .lean(); 
+
+        // Format ulang data untuk klien
+        // const formattedConversation = conversation.map( msg => ({
+        //   sender: msg.sender,
+        //   target: msg.target,
+        //   text: msg.text,
+        //   timestamp: msg.createdAt.toLocaleTimeString('id-ID'),
+        // }));
+
+        // Kirim riwayat kembali hanya ke klien yang meminta
+        socket.emit('message-history', conversation);
+
+      } catch (error) {
+        // console.error("Gagal mengambil riwayat pesan:", error);
+        // socket.emit('status_update', { 
+        //   text: `Gagal memuat riwayat chat.`,
+        //   isError: true
+        // });
+      }
+    });
+
+    socket.on("typing", ({to, isTyping}) => {
+      const from = Object.keys(userSocketMap).find( userId => userSocketMap[userId] === socket.id);
+      if( !from || !to ) return;
+
+      const target = userSocketMap[to];
+      if(target){
+        //console.log(target, from)
+        io.to(target).emit('typing', {from, isTyping })
+      }
+    })
+
+    // io.emit() is used to send events to all the connected clients
+    io.emit("online-users", Object.keys(userSocketMap));
+
+    // socket.on() is used to listen to the events. can be used both on client and server side
+    socket.on("disconnect", () => {
+      console.log("user disconnected", socket.id);
+      delete userSocketMap[_id];
+      io.emit("online-users", Object.keys(userSocketMap));
+    });
+  });
 }

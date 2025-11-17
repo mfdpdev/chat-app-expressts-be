@@ -14,7 +14,14 @@ apiRouter.get('/auth/me', AuthController.me);
 apiRouter.delete('/auth/signout', AuthController.signout);
 
 //chat
-apiRouter.post('/chats/:receiverId', ChatController.create);
+// apiRouter.post('/chats/:recipientId', ChatController.create);
+apiRouter.post('/chats', ChatController.create);
+apiRouter.get('/chats/:conversationId', ChatController.getById);
+// apiRouter.update('/chats/:conversationId', ChatController.create);
+// apiRouter.delete('/chats/:conversationId', ChatController.create);
+
+//message
+// apiRouter.post('/messages', ChatController.create);
 
 //user
 apiRouter.get("/users", UserController.getAll);
