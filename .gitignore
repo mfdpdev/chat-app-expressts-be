@@ -1,6 +1,9 @@
 # dependencies (bun install)
 node_modules
 
+public/images/*
+public/uploads/profiles/*
+
 # output
 out
 dist

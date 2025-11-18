@@ -34,7 +34,10 @@ export default class AuthValidation {
       'string.min': 'Password should have at least 6 characters',
       'string.max': 'Password should have at most 128 characters',
     }),
-  }).strict();
+
+  }).strict().options({
+    stripUnknown: true,
+  });
 
   static readonly SIGNIN: ObjectSchema = Joi.object({
     email: Joi.string()

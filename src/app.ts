@@ -11,6 +11,9 @@ app.use(express.json())
 
 const prefix: string = "/api/v1";
 
+app.use("/uploads", express.static("public/uploads"))
+app.use("/images", express.static("public/images"))
+
 app.use(cors({
   origin: "http://localhost:5173",
   credentials: true,

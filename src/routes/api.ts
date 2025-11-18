@@ -3,6 +3,7 @@ import authMiddleware from "../middlewares/auth.middleware";
 import { AuthController } from "../controllers/auth.controller";
 import { ChatController } from "../controllers/chat.controller";
 import { UserController } from "../controllers/user.controller";
+import uploadProfileMiddleware from "../middlewares/uploadProfile.middleware";
 
 const apiRouter = express.Router();
 
@@ -25,6 +26,6 @@ apiRouter.get('/chats/:conversationId', ChatController.getById);
 
 //user
 apiRouter.get("/users", UserController.getAll);
-apiRouter.patch("/users", UserController.update);
+apiRouter.patch("/users", uploadProfileMiddleware.single("profileImage"), UserController.update);
 
 export default apiRouter;

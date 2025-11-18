@@ -30,17 +30,18 @@ export default class AuthService {
 
     await user.save();
 
-    const response: SignUpResponse = {
+    const response: SignUpResponse | any = {
       _id: user.id,
       name: user.name as string,
       email: user.email as string,
+      profileImageUrl: user.profileImageUrl,
       createdAt: (user.createdAt as Date).toISOString(),
     }
 
     return response;
   }
 
-  static async signin(signInRequest: SignInRequest): Promise<SignInResponse> {
+  static async signin(signInRequest: SignInRequest): Promise<SignInResponse | any> {
 
     const validatedData = Validation.validate(AuthValidation.SIGNIN, signInRequest);
 
@@ -74,6 +75,7 @@ export default class AuthService {
       _id: user.id,
       name: user.name as string,
       email: user.email as string,
+      profileImageUrl: user.profileImageUrl,
       accessToken: accessToken,
       refreshToken: refreshToken,
     }
