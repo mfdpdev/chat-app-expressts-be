@@ -4,10 +4,12 @@ import publicRouter from "./routes/public-api";
 import apiRouter from "./routes/api";
 import errorMiddleware from "./middlewares/error.middleware";
 import cors from "cors";
+import { defaultLimiter } from "./middlewares/rateLimiter.middleware";
 
 const app = express();
 
 app.use(express.json())
+app.use(defaultLimiter)
 
 const prefix: string = "/api/v1";
 
