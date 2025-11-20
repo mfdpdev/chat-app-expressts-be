@@ -73,4 +73,80 @@ export default class ConversationService {
           // .lean(); 
     return conversation;
   }
+
+  static async getAll(userId: string, query: any = {}) {
+    // const page = parseInt(query.page as string) || 1;
+    // const limit = Math.min(parseInt(query.limit as string) || 20, 50); // max 50
+    // const skip = (page - 1) * limit;
+
+    // Cari semua conversation yang melibatkan user ini
+    const conversations = await Conversation.find({
+      participants: userId, // pasti ada user ini di participants
+    })
+      .sort({ updatedAt: -1 }) // terbaru di atas
+      // .skip(skip)
+      // .limit(limit)
+      // .lean({ virtuals: true }) // biar virtual muncul kalau ada
+      .populate([
+        {
+          path: "participants",
+          select: "_id name profileImage profileImageUrl", // tambahin profileImageUrl kalau pakai virtual
+        },
+        // Populate last message (hanya 1 pesan terakhir)
+        {
+          path: "messages",
+          select: "_id senderId recipientId message createdAt updatedAt",
+          options: { sort: { createdAt: -1 }},
+        },
+      ]);
+
+    // Format biar rapi buat frontend
+    const formatted = conversations.map((conv: any) => {
+      // const otherParticipant = conv.participants[0] || {}; // pasti cuma 1 karena match $ne
+
+      const lastMessage = conv.messages[0] || null;
+
+      return {
+        _id: conv._id,
+        participants: conv.participants.find( (e: any) => e._id != userId),
+        // participant: {
+        //   _id: otherParticipant._id,
+        //   name: otherParticipant.name || "Unknown",
+        //   profileImageUrl:
+        //     otherParticipant.profileImageUrl ||
+        //     `${process.env.APP_URL || "http://localhost:8000"}/images/default-profile.jpeg`,
+        // },
+        lastMessage: lastMessage
+          ? {
+              _id: lastMessage._id,
+              message: lastMessage.message,
+              createdAt: lastMessage.createdAt,
+              isMine: lastMessage.senderId.toString() === userId,
+            }
+          : null,
+        createdAt: conv.createdAt,
+        updatedAt: conv.updatedAt,
+        // optional: unread count
+        // unreadCount: ... (bisa ditambah nanti)
+      };
+    });
+
+    // Total untuk pagination
+    // const total = await Conversation.countDocuments({
+    //   participants: loggedInUserId,
+    // });
+
+    return formatted;
+    // return {
+    //   data: formatted,
+    //   pagination: {
+    //     page,
+    //     limit,
+    //     total,
+    //     totalPages: Math.ceil(total / limit),
+    //     hasNext: page < Math.ceil(total / limit),
+    //     hasPrev: page > 1,
+    //   },
+    // };
+  }
 }

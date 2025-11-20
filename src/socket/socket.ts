@@ -34,6 +34,8 @@ export function init(io: Server){
       }
 
       io.to(userSocketMap[from]).emit('receive-message', lastMessage)
+
+      io.to(target).emit('conversations-history', await ConversationService.getAll(to))
     })
 
 
@@ -80,6 +82,13 @@ export function init(io: Server){
         // });
       }
     });
+
+    socket.on("fetch-conversations-history", async () => {
+      const userId = Object.keys(userSocketMap).find( userId => userSocketMap[userId] === socket.id);
+      const conversations = await ConversationService.getAll(userId as string);
+
+      socket.emit('conversations-history', conversations);
+    })
 
     socket.on("typing", ({to, isTyping}) => {
       const from = Object.keys(userSocketMap).find( userId => userSocketMap[userId] === socket.id);

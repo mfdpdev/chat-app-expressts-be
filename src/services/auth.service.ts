@@ -109,8 +109,8 @@ export default class AuthService {
     const user = await User.findById({
       _id: _id
     }).select(
-        "_id name email"
-      ).lean();
+        "_id name email profileImage profileImageUrl"
+      );
 
     return user;
   }
